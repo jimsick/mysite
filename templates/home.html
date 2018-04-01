@@ -16,5 +16,39 @@
 
 <!-- content内容 -->
 {% block content %}
+
     <h3 class="home_content">欢迎访问我的网站,随便看</h3>
+    <div id="container" style="width: 600px;height:400px;"></div>
+
+    <script>
+        // 图表配置
+        var options = {
+            chart: {type: 'line'},
+            title: { text: null},
+            xAxis: {
+                categories: {{read_nums_dates|safe}},
+                tickmarkPlacement: 'on'
+            },
+            yAxis: {
+                title: { text: null},
+                labels: { enabled: false},
+                girdLineDashStyle: 'Dash'
+            },
+            series: [{                              // 数据列
+                name: '阅读量',                        // 数据列名
+                data: {{read_nums|safe}}                     // 数据
+            }],
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: true
+                    }
+                }
+            },
+            legend: { enabled: false},
+            credits: { enabled: false},
+        };
+        // 图表初始化函数
+        var chart = Highcharts.chart('container', options);
+    </script>
 {% endblock%}
