@@ -1,0 +1,20 @@
+{% extends 'base.html'%}
+{% load static %}
+
+<!-- title内容-->
+{% block title %}
+    我的网站|首页
+{% endblock %}
+
+
+{% block nav_home_active %}active{% endblock %}
+
+<!-- 引入css文件-->
+{% block header_extends %}
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+{% endblock %}
+
+<!-- content内容 -->
+{% block content %}
+    <h3 class="home_content">欢迎访问我的网站,随便看</h3>
+{% endblock%}
