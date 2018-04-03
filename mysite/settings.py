@@ -135,7 +135,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # ckeditor路径配置
 CKEDITOR_UPLOAD_PATH = 'upload/'
 
-
 # 定义系统值
 EACH_PAGE_BLOGS_NUM = 5
+
+# 缓存设置
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
+    }
+}
 
