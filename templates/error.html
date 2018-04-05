@@ -1,0 +1,19 @@
+{% extends 'base.html'%}
+{% load static %}
+
+<!-- title内容-->
+{% block title %}
+    错误页面
+{% endblock %}
+
+
+<!-- 引入css文件-->
+{% block header_extends %}
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+
+{% endblock %}
+
+<!-- content内容 -->
+{% block content %}
+    {{message}}
+{% endblock%}
