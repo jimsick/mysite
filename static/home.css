@@ -11,3 +11,6 @@ div#container{
     min-width: 20em;
     max-width: 30em;
 }
+div.hot_blog{
+    text-align: center;
+}

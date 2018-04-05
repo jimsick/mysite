@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, render
 from .models import BlogType, Blog
 from django.core.paginator import Paginator
 from django.conf import settings
@@ -58,7 +58,7 @@ def get_blog_list_common_data(request, blogs_all_list):
 def blog_list(request):
     blogs_all_list = Blog.objects.all()
     context = get_blog_list_common_data(request, blogs_all_list)
-    return render_to_response("blog/blog_list.html", context)
+    return render(request, "blog/blog_list.html", context)
 
 
 """根据博客类型查看博客"""
@@ -67,14 +67,14 @@ def blog_with_type(request, blog_type_pk):
     blogs_all_list = Blog.objects.filter(blog_type=blog_type)  # 取出对应类型的所有博客
     context = get_blog_list_common_data(request, blogs_all_list)
     context["blog_type"] = blog_type
-    return render_to_response("blog/blog_with_type.html", context)
+    return render(request, "blog/blog_with_type.html", context)
 
 
 """根据日期查看博客"""
 def blog_with_date(request, year, month):
     blogs_all_list = Blog.objects.filter(created_time__year=year, created_time__month=month)
     context = get_blog_list_common_data(request, blogs_all_list)
-    return render_to_response("blog/blog_with_date.html", context)
+    return render(request, "blog/blog_with_date.html", context)
 
 
 """博客文章"""
@@ -85,6 +85,6 @@ def blog_detail(request, blog_pk):
     context["blog"] = blog
     context["previous_blog"] = Blog.objects.filter(created_time__lt=blog.created_time).first()
     context["next_blog"] = Blog.objects.filter(created_time__gt=blog.created_time).last()
-    response = render_to_response("blog/blog_detail.html", context)
+    response = render(request, "blog/blog_detail.html", context)
     response.set_cookie(key, 'true', max_age=10)
     return response
