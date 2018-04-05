@@ -23,17 +23,25 @@
     <div class="hot_blog">
         <h3>昨日热门点击</h3>
         <ul>
-            {% for data in yesterday_hot_data %}
+        {% for data in yesterday_hot_data %}
             <li><a href="{% url 'blog_detail' data.content_object.pk %}">{{data.content_object.title}}({{data.read_num}})</a></li>
-            {% endfor %}
+        {% empty %}
+            <li>暂无热门博客</li>
+        {% endfor %}
         </ul>
     </div>
     <div class="hot_blog">
         <h3>今日热门点击</h3>
         <ul>
-            {% for data in today_hot_data %}
-            <li><a href="{% url 'blog_detail' data.content_object.pk %}">{{data.content_object.title}}({{data.read_num}})</a></li>
-            {% endfor %}
+        {% for data in today_hot_data %}
+            <li>
+                <a href="{% url 'blog_detail' data.content_object.pk %}">
+                    {{data.content_object.title}}({{data.read_num}})
+                </a>
+            </li>
+        {% empty %}
+            <li>今日暂无热门博客</li>
+        {% endfor %}
         </ul>
     </div>
     <div class="hot_blog">
@@ -41,7 +49,9 @@
         <ul>
             {% for data in week_days_hot_data %}
             <li><a href="{% url 'blog_detail' data.id %}">{{data.title}}</a></li>
-            {% endfor %}
+            {% empty %}
+            <li>暂无热门博客</li>
+        {% endfor %}
         </ul>
     </div>
     <script>

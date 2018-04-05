@@ -3,6 +3,7 @@ from .models import BlogType, Blog
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.db.models import Count
+from comment.models import Comment
 from read_statistics.utils import read_statistics_once_read
 
 """分页"""
@@ -82,9 +83,11 @@ def blog_detail(request, blog_pk):
     context = {}
     blog = get_object_or_404(Blog, pk=blog_pk)
     key = read_statistics_once_read(request, blog)
+    comments = Comment.objects.all()
     context["blog"] = blog
     context["previous_blog"] = Blog.objects.filter(created_time__lt=blog.created_time).first()
     context["next_blog"] = Blog.objects.filter(created_time__gt=blog.created_time).last()
+    context["comments"] = comments
     response = render(request, "blog/blog_detail.html", context)
     response.set_cookie(key, 'true', max_age=10)
     return response

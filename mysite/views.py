@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, render, redirect
+from django.shortcuts import render_to_response, render, redirect, reverse
 from django.core.cache import cache
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import authenticate, login
@@ -15,7 +15,7 @@ from read_statistics.utils import (get_seven_days_read_data,
 
 def savecache(func, name, blog_content_type, time=60):
     """
-        将数据保存到cache中，
+        将数据保存到cache中
         func  方法名
         name  cache中对应的key
         blog_content_type
@@ -47,8 +47,10 @@ def blog_login(request):
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
     user = authenticate(request, username=username, password=password)
+    # 获取提交过来时当前链接 如果没有则返回首页
+    referer = request.META.get("HTTP_REFERER", reverse("home"))
     if user is not None:
         login(request, user)
-        return redirect("/")
+        return redirect(referer)
     else:
         return render(request, "error.html", {"message": "用户名或密码不正确"})
