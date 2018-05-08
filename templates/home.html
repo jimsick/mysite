@@ -17,42 +17,47 @@
 
 <!-- content内容 -->
 {% block content %}
+    <!--<iframe src="//player.bilibili.com/player.html?aid=21748816&cid=35868771&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>-->
 
     <h3 class="home_content">欢迎访问我的网站,随便看</h3>
     <div id="container"></div>
-    <div class="hot_blog">
-        <h3>昨日热门点击</h3>
-        <ul>
-        {% for data in yesterday_hot_data %}
-            <li><a href="{% url 'blog_detail' data.content_object.pk %}">{{data.content_object.title}}({{data.read_num}})</a></li>
-        {% empty %}
-            <li>暂无热门博客</li>
-        {% endfor %}
-        </ul>
-    </div>
-    <div class="hot_blog">
-        <h3>今日热门点击</h3>
-        <ul>
-        {% for data in today_hot_data %}
-            <li>
-                <a href="{% url 'blog_detail' data.content_object.pk %}">
-                    {{data.content_object.title}}({{data.read_num}})
-                </a>
-            </li>
-        {% empty %}
-            <li>今日暂无热门博客</li>
-        {% endfor %}
-        </ul>
-    </div>
-    <div class="hot_blog">
-        <h3>周热门博客</h3>
-        <ul>
-            {% for data in week_days_hot_data %}
-            <li><a href="{% url 'blog_detail' data.id %}">{{data.title}}</a></li>
-            {% empty %}
-            <li>暂无热门博客</li>
-        {% endfor %}
-        </ul>
+    <div class="container"></div>
+        <div class="row">
+            <div class="hot_blog col-xs-4">
+                <h3>周热门博客</h3>
+                <ul>
+                    {% for data in week_days_hot_data %}
+                    <li><a href="{% url 'blog_detail' data.id %}">{{data.title}}</a></li>
+                    {% empty %}
+                    <li>暂无热门博客</li>
+                {% endfor %}
+                </ul>
+            </div>
+            <div class="hot_blog  col-xs-4">
+                <h3>今日热门点击</h3>
+                <ul>
+                {% for data in today_hot_data %}
+                    <li>
+                        <a href="{% url 'blog_detail' data.content_object.pk %}">
+                            {{data.content_object.title}}({{data.read_num}})
+                        </a>
+                    </li>
+                {% empty %}
+                    <li>今日暂无热门博客</li>
+                {% endfor %}
+                </ul>
+            </div>
+            <div class="hot_blog col-xs-4">
+                <h3>昨日热门点击</h3>
+                <ul>
+                {% for data in yesterday_hot_data %}
+                    <li><a href="{% url 'blog_detail' data.content_object.pk %}">{{data.content_object.title}}({{data.read_num}})</a></li>
+                {% empty %}
+                    <li>暂无热门博客</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
     <script>
         // 图表配置

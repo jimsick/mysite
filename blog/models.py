@@ -12,16 +12,18 @@ class BlogType(models.Model):
 
 
 class Blog(models.Model, ReadNumExpandMethod):
-    title = models.CharField(max_length=50)
+    title = models.CharField(max_length=50, verbose_name='标题')
     content = RichTextUploadingField()
-    created_time = models.DateTimeField(auto_now_add=True)
-    lst_update_time = models.DateTimeField(auto_now=True)
-    author = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    blog_type = models.ForeignKey(BlogType, on_delete=models.DO_NOTHING)
+    created_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    lst_update_time = models.DateTimeField(auto_now=True, verbose_name='最后修改日期')
+    author = models.ForeignKey(User, on_delete=models.DO_NOTHING, verbose_name='作者')
+    blog_type = models.ForeignKey(BlogType, on_delete=models.DO_NOTHING, verbose_name='博客类型')
     read_detail = GenericRelation(ReadDetail)
+
     def __str__(self):
         return "<Blog:%s>" % self.title
-    # 按创建时间倒叙排列
+
     class Meta:
+        # 按创建时间倒叙排列
         ordering = ["-created_time"]
 

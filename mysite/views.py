@@ -2,6 +2,7 @@ from django.shortcuts import render_to_response, render, redirect, reverse
 from django.core.cache import cache
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models import Sum
 import datetime
@@ -11,15 +12,15 @@ from read_statistics.utils import (get_seven_days_read_data,
                                    get_today_hot_read_data,
                                    get_7_days_hot_data)
 
-
-
-def savecache(func, name, blog_content_type, time=60):
-    """
-        将数据保存到cache中
+from .forms import LoginForm, RegForm
+"""
+    将数据保存到cache中
         func  方法名
         name  cache中对应的key
         blog_content_type
-    """
+ """
+def savecache(func, name, blog_content_type, time=60):
+
     result = cache.get(name)
     if not result:
         result = func(blog_content_type)
@@ -27,6 +28,7 @@ def savecache(func, name, blog_content_type, time=60):
     return result
 
 
+"""首页"""
 def home(request):
     blog_content_type = ContentType.objects.get_for_model(Blog)  # blog类型
     read_nums_dates, read_nums = get_seven_days_read_data(blog_content_type)  # 一周每天阅读量
@@ -43,14 +45,40 @@ def home(request):
     return render(request, 'home.html', context)
 
 
+"""博客登录页面"""
 def blog_login(request):
-    username = request.POST.get('username', '')
-    password = request.POST.get('password', '')
-    user = authenticate(request, username=username, password=password)
-    # 获取提交过来时当前链接 如果没有则返回首页
-    referer = request.META.get("HTTP_REFERER", reverse("home"))
-    if user is not None:
-        login(request, user)
-        return redirect(referer)
+    if request.method == "POST":
+        login_form = LoginForm(request.POST)
+        if login_form.is_valid():
+            login(request, user=login_form.cleaned_data['user'])
+            return redirect(request.GET.get('from', reverse('home')))
     else:
-        return render(request, "error.html", {"message": "用户名或密码不正确"})
+        login_form = LoginForm()
+    content = {
+        'login_form': login_form
+    }
+    return render(request, 'login.html', content)
+
+
+"""博客注册页面"""
+def blog_register(request):
+    if request.method == "POST":
+        reg_form = RegForm(request.POST)
+        if reg_form.is_valid():
+            username = reg_form.cleaned_data['username']
+            email = reg_form.cleaned_data['email']
+            password_again = reg_form.cleaned_data['password_again']
+            try:
+                user = User.objects.create_user(username, email, password_again)
+                user.save()
+                user_login = authenticate(username=username, password=password_again)
+                login(request, user_login)
+                return redirect(request.GET.get('from', reverse('home')))
+            except Exception as e:
+                print(e)
+    else:
+        reg_form = RegForm()
+    content = {
+        'reg_form': reg_form
+    }
+    return render(request, 'register.html', content)
