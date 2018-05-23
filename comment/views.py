@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from .models import Comment
 from .forms import CommentForm
 
-
 def update_comment(request):
     referer = request.META.get('HTTP_REFERER', reverse('home'))
     comment_form = CommentForm(request.POST, user=request.user)
@@ -23,7 +22,7 @@ def update_comment(request):
         # 返回数据
         data['status'] = 'SUCCESS'
         data['username'] = comment.user.username
-        data['comment_time'] = comment.comment_time.strftime('%Y-%m-%d %H:%m:%s')
+        data['comment_time'] = comment.comment_time.timestamp()
         data['text'] = comment.text
         if parent is not None:
             data['reply_to'] = comment.reply_to.username

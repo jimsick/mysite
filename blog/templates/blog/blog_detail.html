@@ -5,6 +5,9 @@
 {% endblock %}
 
 {% load staticfiles %}
+{% load comment_tags %}
+{% load likes_tags %}
+
 {% block header_extends %}
     <link rel="stylesheet" href="{% static 'blog/blog.css'%}">
     <script type="text/javascript" src="{% static 'ckeditor/ckeditor-init.js' %}"></script>
@@ -26,15 +29,29 @@
                     <li>类型:<a href="{% url 'blog_with_type' blog.blog_type.pk %}">{{blog.blog_type}}</a></li>
                     <li>发表日期:{{blog.created_time|date:"Y-m-d H:n:s"}}</li>
                     <li>阅读({{blog.get_read_num}})</li>
+                    <li>评论数({% get_comment_count blog %})</li>
                 </ul>
                 <div class="blog-content">{{blog.content|safe}}</div>
+                <div class="like {% get_like_status blog %}" onclick="likeChange(this, '{% get_content_type blog %}', {{ blog.pk }})">
+                    <span class="glyphicon glyphicon-thumbs-up"></span>
+                    <span class="liked-num">{% get_like_count blog %}</span>
+                    <span>喜欢</span>
+                </div>
                 <div class="blog-more">
-                    {% if previous_blog %}
-                        <p><a href="{% url 'blog_detail' previous_blog.pk %}">上一篇:{{previous_blog.title}}</a></p>
-                    {% endif%}
-                    {% if next_blog %}
-                        <p><a href="{% url 'blog_detail' next_blog.pk %}">下一篇:{{next_blog.title}}</a></p>
-                    {% endif %}
+                    <p>上一篇：
+                        {% if previous_blog %}
+                            <a href="{% url 'blog_detail' previous_blog.pk %}">{{previous_blog.title}}</a>
+                        {% else %}
+                            没有了
+                        {% endif%}
+                    </p>
+                    <p>下一篇：
+                        {% if next_blog %}
+                            <a href="{% url 'blog_detail' next_blog.pk %}">{{next_blog.title}}</a>
+                        {% else %}
+                            没有了
+                        {% endif %}
+                    </p>
                 </div>
             </div>
         </div>
@@ -46,10 +63,12 @@
                         <form id="comment_form" action="{% url 'update_comment' %}" method="POST"  style="overflow:hidden">
                             <label>{{user.username}}，欢迎评论~</label>
                             <div id="reply_content_container" style="display:none;">
-                                <p>回复：</p>
+                                <p id="reply_title">回复：</p>
                                 <div id="reply_content"></div>
                             </div>
+
                             {% csrf_token %}
+                            {% get_comment_form blog as comment_form %}
                             {% for field in comment_form %}
                                 {{ field }}
                             {% endfor %}
@@ -66,11 +85,16 @@
                 <div class="comment-area">
                     <h3 class="comment-area-title">评论列表区</h3>
                     <ul id="comment_list">
+                        {% get_comment_list blog as comments %}
                         {% for comment in comments %}
                             <li id="root_{{comment.pk}}" class="comment-list">
                                 <span>{{comment.user.username}}</span>
                                 <span>({{comment.comment_time|date:"Y-m-d H:i:s"}})：</span>
                                 <div id="comment_{{ comment.pk }}">{{comment.text|safe}}</div>
+                                <div class="like {% get_like_status comment %}" onclick="likeChange(this, '{% get_content_type comment %}', {{ comment.pk }})">
+                                    <span class="glyphicon glyphicon-thumbs-up"></span>
+                                    <span class="liked-num">{% get_like_count comment %}</span>
+                                </div>
                                 <a href="javascript:reply({{ comment.pk }});">回复</a>
                                 {% for reply in comment.root_comment.all %}
                                     <div class="reply">
@@ -97,6 +121,20 @@
 
 {% block script_extends %}
     <script>
+
+        function reply(reply_comment_id){
+            html = $("#comment_"+reply_comment_id).html();
+            // 设置值
+            $("#reply_comment_id").val(reply_comment_id);
+
+            // 评论头部回复
+            $("#reply_content").html(html);
+            $("#reply_content_container").show();
+
+            $('html').animate({scrollTop: $('#comment_form').offset().top - 60}, 300, function(){
+                CKEDITOR.instances['id_text'].focus();
+            });
+        }
          // action="{% url 'update_comment' %}"
         $("#comment_form").submit(function(){
             //判断是否为空
@@ -124,15 +162,16 @@
                             comment_html =
                                 '<li class="comment-list" id="root_' + data['pk'] + '">' +
                                 '<span>' + data['username'] + '</span>' +
-                                '<span>(' + data['comment_time'] + ')：</span> ' +
+                                '<span>(' + timeFormat(data['comment_time']) + ')：</span> ' +
                                 '<div id="comment_' + data['pk'] + '">' + data['text'] + '</div> ' +
+                                '<div class="like {% get_like_status comment %}" onclick="likeChange(this, '{% get_content_type comment %}', {{ comment.pk }})">
                                 '<a href="javascript:reply(' + data['pk'] + ');">回复</a></li>';
                             $("#comment_list").prepend(comment_html);
                         }else{
                             reply_html =
                                 '<div class="reply">' +
                                 '<span>' + data['username'] + '</span>' +
-                                '<span>(' + data['comment_time'] + ')</span>' +
+                                '<span>(' + timeFormat(data['comment_time']) + ')</span>' +
                                 '<span>回复</span>' +
                                 '<span>' + data['reply_to'] + '：</span> ' +
                                 '<div id="comment_' + data['pk'] + '">' + data['text'] + '</div> ' +
@@ -156,19 +195,51 @@
             });
             return false;
         });
-        function reply(reply_comment_id){
-            html = $("#comment_"+reply_comment_id).html();
-            // 设置值
-            $("#reply_comment_id").val(reply_comment_id);
-
-            // 评论头部回复
-            $("#reply_content").html(html);
-            $("#reply_content_container").show();
-
-            $('html').animate({scrollTop: $('#comment_form').offset().top - 60}, 300, function(){
-                CKEDITOR.instances['id_text'].focus();
-            });
+        function numFormat(num){
+            return ("00" + num).substr(-2);
+        }
+        function timeFormat(timestamp){
+            datetime = new Date( timestamp * 1000 )
+            year = numFormat(datetime.getFullYear());
+            month = numFormat(datetime.getMonth());
+            day = numFormat(datetime.getDay());
+            hour = numFormat(datetime.getHours());
+            minutes = numFormat(datetime.getMinutes());
+            second = numFormat(datetime.getSeconds());
+            return year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":" + second;
         }
 
+
+        // like点击
+        function likeChange(obj, content_type, object_id){
+            var is_like = $(obj).hasClass('active') == false
+            $.ajax({
+                url: '{% url "like_change" %}',
+                type: "GET",
+                data: {
+                    content_type: content_type,
+                    object_id: object_id,
+                    is_like: is_like
+                },
+                cache: false,
+                success: function(data){
+                    if(data['status'] == 'SUCCESS'){
+                        var element = $(obj);
+                        if(is_like){
+                            element.addClass('active');
+                        }else{
+                            element.removeClass('active');
+                        }
+                        var liked_num = $(obj.getElementsByClassName('liked-num'));
+                        liked_num.text(data['liked_num'])
+                    }else{
+                        alert(data['message'])
+                    }
+                },
+                error: function(xhr){
+                    console.log(xhr)
+                }
+            });
+        }
     </script>
 {% endblock %}

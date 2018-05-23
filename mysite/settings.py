@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+# Build paths inside the project likes this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'read_statistics',
     'comment',
+    'likes',
 ]
 
 MIDDLEWARE = [
@@ -174,11 +175,7 @@ CKEDITOR_CONFIGS = {
         'removePlugins': 'elementspath',
         'resize_enabled': False,
     },
-    'default': {
-        'toolbar': 'Full',
-        'height': 300,
-        'width': '100%',
-    },
+    'default': {},
 }
 
 
